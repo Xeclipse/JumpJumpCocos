@@ -8,3 +8,5 @@
 **/*.cocos-project
 **/temp/
 **/library/
+**/profiles/
+package.json
