@@ -1,0 +1,10 @@
+# VS Code
+.vscode/
+
+# Cocos Creator
+**/*.meta
+**/*.fire
+**/*.d.ts
+**/*.cocos-project
+**/temp/
+**/library/
