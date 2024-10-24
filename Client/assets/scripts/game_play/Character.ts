@@ -53,7 +53,6 @@ export class Character extends Component {
     }
 
     onKeyDown(dinoInputEvent: DinoInputEvent) {
-        log(this.state);
         switch (this.state) {
             case CharacterState.IDLE:
                 // 挂机中，不接受任何输入
