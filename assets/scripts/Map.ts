@@ -8,8 +8,10 @@ export class Map extends Component {
     ground: Sprite | null = null;
 
     @property(Prefab)
-    cubefab: Prefab | null = null;
+    cube: Prefab | null = null;
 
+    @property(Prefab)
+    highCube: Prefab | null = null;
 
     @property(Label)
     infoLabel: Label | null = null;
@@ -26,34 +28,30 @@ export class Map extends Component {
         this._groundUpBoundary = this.ground.node.position.y + collider2D.offset.y + collider2D.size.height / 2;
     }
 
-    generateObstacles() {
-    }
-
-    spawCube() {
-        let cube = instantiate(this.cubefab)
+    spawCube(prefab:Prefab) {
+        let cube = instantiate(prefab)
         let cubeColider = cube.getComponent(BoxCollider2D)
         cube.setPosition(this._groundRightBoundary - cubeColider.size.x / 2, this._groundUpBoundary + cubeColider.size.y / 2);
-        cube.getComponent(RigidBody2D).applyLinearImpulseToCenter(new Vec2(-0.5, 0), true);
+        // cube.getComponent(RigidBody2D).applyLinearImpulseToCenter(new Vec2(-1, 0), true);
+        cube.getComponent(RigidBody2D).linearVelocity=new Vec2(-5, 0);
         this._obstacles.push(cube)
         this.node.addChild(cube)
         return cube;
     }
-
 
     update(deltaTime: number) {
         if (this._obstacles.length > 0) {
             this.infoLabel.string = this._obstacles[0].position.toString()
             for (let obs of this._obstacles) {
                 // 超出左边缘,销毁障碍物
-                if (obs.position.x < this._groundLeftBoundary-obs.getComponent(BoxCollider2D).size.x/2){
+                if (obs.position.x < this._groundLeftBoundary - obs.getComponent(BoxCollider2D).size.x / 2) {
                     this.destroyCube(obs)
                     this.infoLabel.string = "destroy cube";
                 }
             }
-            
         }
         if (this._obstacles.length == 0) {
-            let cube = this.spawCube();
+            let cube = this.spawCube(this.highCube);
             this.infoLabel.string = "push cube";
         }
 
