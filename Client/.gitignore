@@ -2,7 +2,6 @@
 .vscode/
 
 # Cocos Creator
-**/*.meta
 **/*.fire
 **/*.d.ts
 **/*.cocos-project
