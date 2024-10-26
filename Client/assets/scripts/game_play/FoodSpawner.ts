@@ -3,8 +3,12 @@ import { Character } from './Character';
 import { DinoInputEvent, InputManager } from './InputManager';
 import { DINO_EVENT_FOOD_ATE, DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
 import { Food } from './Food';
-import { ProbabilityUtil } from '../Utils';
+import { RandomUtil } from '../Utils';
 const { ccclass, property } = _decorator;
+
+const TOP_HEIGHT = 30;
+const MID_HEIGHT = 0;
+const BOTTOM_HEIGHT = -20;
 
 // 跟随角色移动，食物生成在屏幕外
 @ccclass('FoodSpawner')
@@ -21,9 +25,9 @@ export class FoodSpawner extends Component {
 
     start() {
         setTimeout(() => {
-            this.initPos = new Vec3(this.node.position.x, this.node.position.y, this.node.position.z);
+            this.initPos = new Vec3(this.node.position.x + 500, this.node.position.y, this.node.position.z);
             this.schedule(() => {
-                if (ProbabilityUtil.checkProbability(this.genrateProb)) {
+                if (RandomUtil.checkProbability(this.genrateProb)) {
                     this.genrateFood();
                 }
             }, 1, macro.REPEAT_FOREVER);
@@ -47,7 +51,17 @@ export class FoodSpawner extends Component {
     genrateFood(): void {
         let foodNode = instantiate(this.foodPref);
         this.node.addChild(foodNode);
-        foodNode.setPosition(0, 0, this.node.position.z);
+
+        let indx = Math.round(RandomUtil.getRandomNumber(0, 2));
+        let height = MID_HEIGHT;
+        if (indx == 0) {
+            height = TOP_HEIGHT;
+        }
+        if (indx == 2) {
+            height = BOTTOM_HEIGHT;
+        }
+
+        foodNode.setPosition(0, height, this.node.position.z);
         foodNode.on(DINO_EVENT_FOOD_ATE, (food: Food) => {
             setTimeout(() => {
                 this.node.removeChild(food.node);

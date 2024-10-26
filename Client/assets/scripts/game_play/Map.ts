@@ -1,6 +1,7 @@
-import { _decorator, BoxCollider2D, Collider2D, Component, instantiate, Label, Node, Prefab, RigidBody, RigidBody2D, Sprite, Vec2, Vec3 } from 'cc';
+import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, ImageAsset, instantiate, IPhysics2DContact, Label, Node, Prefab, RigidBody, RigidBody2D, Sprite, SpriteFrame, Vec2, Vec3 } from 'cc';
 import { DebugUIManager } from '../UI/DebugUIManager';
 import { Character } from './Character';
+import { GROUP_DEADZONE } from '../PhysicsVars';
 const { ccclass, property } = _decorator;
 
 @ccclass('Map')
@@ -30,6 +31,8 @@ export class Map extends Component {
             this.groundNode.setPosition(this.groundNodeInitPos.x + this.character.getDistance(), this.groundNodeInitPos.y, this.groundNodeInitPos.z);
         }
 
-        this.deadZoneBody.node.setPosition(this.character.node.position.x - 200, this.deadZoneBody.node.position.y, this.deadZoneBody.node.position.z);
+        this.deadZoneBody.node.setPosition(this.character.node.position.x - 800, this.deadZoneBody.node.position.y, this.deadZoneBody.node.position.z);
+
+
     }
 }

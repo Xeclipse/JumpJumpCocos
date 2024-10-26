@@ -44,16 +44,26 @@
       {
         "index": 6,
         "name": "UNREACHABLE"
+      },
+      {
+        "index": 7,
+        "name": "BACKGROUND"
+      },
+      {
+        "index": 8,
+        "name": "DEADZONE"
       }
     ],
     "collisionMatrix": {
       "0": 1,
-      "1": 4,
+      "1": 260,
       "2": 2,
       "3": 16,
       "4": 40,
       "5": 16,
-      "6": 0
+      "6": 0,
+      "7": 256,
+      "8": 130
     }
   }
 }

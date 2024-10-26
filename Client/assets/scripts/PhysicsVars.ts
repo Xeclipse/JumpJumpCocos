@@ -1,0 +1,9 @@
+export const GROUP_DEFAULT = 1;
+export const GROUP_FOOD = 1 << 1;
+export const GROUP_EAT_ZONE = 1 << 2;
+export const GROUP_BODY_ZONE = 1 << 3;
+export const GROUP_GROUND = 1 << 4;
+export const GROUP_GROUND_TOUCHER = 1 << 5;
+export const GROUP_UNREACHABLE = 1 << 6;
+export const GROUP_BACKGROUND = 1 << 7;
+export const GROUP_DEADZONE = 1 << 8;
