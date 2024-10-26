@@ -299,7 +299,6 @@ export class Character extends Component {
     }
 
     public eatFood(food: Food): void {
-        log(this.isPrecise);
         this.characterHungerCurrent += food.getHunger(this.isPrecise);
     }
 }
