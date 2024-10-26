@@ -33,15 +33,12 @@
       },
       {
         "__id__": 91
-      },
-      {
-        "__id__": 93
       }
     ],
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 95
+      "__id__": 93
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -72,7 +69,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 96
+      "__id__": 94
     },
     "_id": "ec077dd5-2180-467c-bb7f-922d3a551796"
   },
@@ -3095,7 +3092,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "GameManager",
+    "_name": "CameraProxy",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -3136,63 +3133,6 @@
       "y": 0,
       "z": 0
     },
-    "_id": "a9VDN6r55DML3lZ66SRUlH"
-  },
-  {
-    "__type__": "f9919HdfuRCcpDpDoaHk8Hx",
-    "_name": "",
-    "_objFlags": 0,
-    "__editorExtras__": {},
-    "node": {
-      "__id__": 91
-    },
-    "_enabled": true,
-    "__prefab": null,
-    "_id": "aaOilghwVNeKceAQl9ydiW"
-  },
-  {
-    "__type__": "cc.Node",
-    "_name": "CameraProxy",
-    "_objFlags": 0,
-    "__editorExtras__": {},
-    "_parent": {
-      "__id__": 1
-    },
-    "_children": [],
-    "_active": true,
-    "_components": [
-      {
-        "__id__": 94
-      }
-    ],
-    "_prefab": null,
-    "_lpos": {
-      "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "_lrot": {
-      "__type__": "cc.Quat",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "w": 1
-    },
-    "_lscale": {
-      "__type__": "cc.Vec3",
-      "x": 1,
-      "y": 1,
-      "z": 1
-    },
-    "_mobility": 0,
-    "_layer": 8,
-    "_euler": {
-      "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
     "_id": "90LDaYINRIfLe3WebSHhvq"
   },
   {
@@ -3201,7 +3141,7 @@
     "_objFlags": 0,
     "__editorExtras__": {},
     "node": {
-      "__id__": 93
+      "__id__": 91
     },
     "_enabled": true,
     "__prefab": null,
@@ -3230,28 +3170,28 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 97
+      "__id__": 95
     },
     "shadows": {
-      "__id__": 98
+      "__id__": 96
     },
     "_skybox": {
-      "__id__": 99
+      "__id__": 97
     },
     "fog": {
-      "__id__": 100
+      "__id__": 98
     },
     "octree": {
-      "__id__": 101
+      "__id__": 99
     },
     "skin": {
-      "__id__": 102
+      "__id__": 100
     },
     "lightProbeInfo": {
-      "__id__": 103
+      "__id__": 101
     },
     "postSettings": {
-      "__id__": 104
+      "__id__": 102
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

@@ -25,10 +25,6 @@ const COLLIDER_TAG_GROUND_TOUCHER = 1;
 const COLLIDER_TAG_EAT_ZONE = 2;
 const COLLIDER_TAG_BOTTOM_EAT_ZONE = 3;
 
-// 各类判定时长，单位：ms
-const TIME_RUNNING_EAT = 100;
-const TIME_JUMP_EAT = 100;
-const TIME_SLIDE_EAT = 100;
 
 // 记录角色状态，速度、饥饿值、当前动画等
 @ccclass('Character')
@@ -66,9 +62,18 @@ export class Character extends Component {
     private state: CharacterState = null!;
     private initPos: Vec3 = null!;
     private onGround: boolean = false;
+    private isPrecise: boolean = false;
 
     private eatZoneCollider: Collider2D = null!;
     private bottomEatZoneCollider: Collider2D = null!;
+
+    // 各类判定时长，单位：ms
+    private TIME_RUNNING_EAT = 100;
+    private TIME_RUNNING_PRECISE_EAT = 50;
+    private TIME_JUMP_EAT = 100;
+    private TIME_JUMP_PRECISE_EAT = 50;
+    private TIME_SLIDE_EAT = 100;
+    private TIME_SLIDE_PRECISE_EAT = 50;
 
     start() {
         this.state = CharacterState.IDLE;
@@ -105,18 +110,30 @@ export class Character extends Component {
 
     }
 
-    startEating(collider: Collider2D, duration: number, debugSprite: Sprite) {
+    startEating(collider: Collider2D, duration: number, preciseDuration: number, debugSprite: Sprite) {
+        // FF0000 for eat
+        // 00FF00 for precise eat
+        // 3A79FF for normal
         if (collider != null) {
             if (DINO_DBUG_MODE) {
                 debugSprite.color = new Color(0xFF, 0, 0);
             }
             collider.enabled = true;
+
             setTimeout(() => {
-                collider.enabled = false
+                this.isPrecise = true;
                 if (DINO_DBUG_MODE) {
-                    debugSprite.color = new Color(0x3A, 0x79, 0xFF);
+                    debugSprite.color = new Color(0x00, 0xFF, 0x00);
                 }
-            }, duration);
+                setTimeout(() => {
+                    collider.enabled = false;
+                    if (DINO_DBUG_MODE) {
+                        debugSprite.color = new Color(0x3A, 0x79, 0xFF);
+                    }
+                }, preciseDuration);
+            }, duration - preciseDuration);
+
+
         }
     }
 
@@ -142,10 +159,10 @@ export class Character extends Component {
                         break;
                     case DinoInputEvent.INPUT_EVENT_RIGHT:
                         // 跑吃逻辑，启用eat zone，定时禁用
-                        this.startEating(this.eatZoneCollider, TIME_RUNNING_EAT, this.eatZoneSprite);
+                        this.startEating(this.eatZoneCollider, this.TIME_RUNNING_EAT, this.TIME_RUNNING_PRECISE_EAT, this.eatZoneSprite);
                         break;
                     case DinoInputEvent.INPUT_EVENT_DOWN:
-                        this.startEating(this.bottomEatZoneCollider, TIME_SLIDE_EAT, this.bottomEatZoneSprite);
+                        this.startEating(this.bottomEatZoneCollider, this.TIME_SLIDE_EAT, this.TIME_SLIDE_PRECISE_EAT, this.bottomEatZoneSprite);
                         break;
                 }
                 break;
@@ -176,10 +193,17 @@ export class Character extends Component {
             return;
         }
 
+        if (this.state == CharacterState.RUN_EATING ||
+            this.state == CharacterState.JUMP_EATING ||
+            this.state == CharacterState.SLIDE_EATING
+        ) {
+            this.isPrecise = false;
+        }
+
         switch (this.state) {
             case CharacterState.JUMPING:
                 if (newState == CharacterState.JUMP_EATING) {
-                    this.startEating(this.eatZoneCollider, TIME_JUMP_EAT, this.eatZoneSprite);
+                    this.startEating(this.eatZoneCollider, this.TIME_JUMP_EAT, this.TIME_JUMP_PRECISE_EAT, this.eatZoneSprite);
                     break;
                 }
                 break;
@@ -275,7 +299,8 @@ export class Character extends Component {
     }
 
     public eatFood(food: Food): void {
-        this.characterHungerCurrent += food.getHunger();
+        log(this.isPrecise);
+        this.characterHungerCurrent += food.getHunger(this.isPrecise);
     }
 }
 

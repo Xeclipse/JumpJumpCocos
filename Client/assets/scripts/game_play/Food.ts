@@ -13,7 +13,9 @@ export class Food extends Component {
     @property({ type: CCInteger })
     private foodSpeed: number = 0;
     @property({ type: CCInteger })
-    private foodHunger: number = 10;
+    private foodHunger: number = 3;
+    @property({ type: CCInteger })
+    private foodHungerPrecise: number = 10;
 
     start() {
         setTimeout(() => {
@@ -33,8 +35,8 @@ export class Food extends Component {
 
     }
 
-    public getHunger(): number {
-        return this.foodHunger;
+    public getHunger(isPrecise: boolean): number {
+        return isPrecise ? this.foodHungerPrecise : this.foodHunger;
     }
 }
 
