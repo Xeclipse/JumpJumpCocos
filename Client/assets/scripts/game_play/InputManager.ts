@@ -1,4 +1,5 @@
 import { _decorator, Component, EventKeyboard, Input, input, KeyCode, log, Node } from 'cc';
+import { DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
 const { ccclass, property } = _decorator;
 
 export enum DinoInputEvent {
@@ -6,9 +7,8 @@ export enum DinoInputEvent {
     INPUT_EVENT_UP,
     INPUT_EVENT_RIGHT,
     INPUT_EVENT_DOWN,
+    INPUT_EVENT_DEBUG_GEN_FOOD,
 };
-
-export const INPUT_MANAGER_EVENT: string = "INPUT_MANAGER_EVENT";
 
 /*
 Class: InputManager
@@ -22,16 +22,19 @@ export class InputManager extends Component {
         input.on(Input.EventType.KEY_UP, (event: EventKeyboard) => {
             switch (event.keyCode) {
                 case KeyCode.ARROW_UP:
-                    this.node.emit(INPUT_MANAGER_EVENT,DinoInputEvent.INPUT_EVENT_UP);
+                    this.node.emit(DINO_EVENT_INPUT_MANAGER, DinoInputEvent.INPUT_EVENT_UP);
                     break;
                 case KeyCode.ARROW_DOWN:
-                    this.node.emit(INPUT_MANAGER_EVENT,DinoInputEvent.INPUT_EVENT_DOWN);
+                    this.node.emit(DINO_EVENT_INPUT_MANAGER, DinoInputEvent.INPUT_EVENT_DOWN);
                     break;
                 case KeyCode.ARROW_RIGHT:
-                    this.node.emit(INPUT_MANAGER_EVENT,DinoInputEvent.INPUT_EVENT_RIGHT);
+                    this.node.emit(DINO_EVENT_INPUT_MANAGER, DinoInputEvent.INPUT_EVENT_RIGHT);
+                    break;
+                case KeyCode.KEY_P:
+                    this.node.emit(DINO_EVENT_INPUT_MANAGER, DinoInputEvent.INPUT_EVENT_DEBUG_GEN_FOOD);
                     break;
                 default:
-                    this.node.emit(INPUT_MANAGER_EVENT,DinoInputEvent.INPUT_EVENT_IDLE);
+                    this.node.emit(DINO_EVENT_INPUT_MANAGER, DinoInputEvent.INPUT_EVENT_IDLE);
                     break;
             }
         }, this);

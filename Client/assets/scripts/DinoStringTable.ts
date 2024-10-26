@@ -1,0 +1,2 @@
+export const DINO_EVENT_INPUT_MANAGER: string = "DINO_EVENT_INPUT_MANAGER";
+export const DINO_EVENT_FOOD_ATE: string = "DINO_EVENT_FOOD_ATE";

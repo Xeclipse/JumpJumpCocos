@@ -36,6 +36,14 @@
       {
         "index": 4,
         "name": "GROUND"
+      },
+      {
+        "index": 5,
+        "name": "GROUND_TOUCHER"
+      },
+      {
+        "index": 6,
+        "name": "UNREACHABLE"
       }
     ],
     "collisionMatrix": {
@@ -43,7 +51,9 @@
       "1": 4,
       "2": 2,
       "3": 16,
-      "4": 8
+      "4": 40,
+      "5": 16,
+      "6": 0
     }
   }
 }
