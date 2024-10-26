@@ -1,7 +1,7 @@
 import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, director, EventKeyboard, ICollisionEvent, input, Input, IPhysics2DContact, Label, Node, Overflow, PhysicsSystem2D, RigidBody2D, Vec2, Vec3, CCInteger, Sprite, KeyCode, log } from 'cc';
-import { Tags } from './GameManager';
 import { DinoInputEvent, INPUT_MANAGER_EVENT, InputManager } from './InputManager';
 import { DebugUIManager } from '../UI/DebugUIManager';
+import { HUDManager } from '../UI/HUDManager';
 const { ccclass, property } = _decorator;
 
 export enum CharacterState {
@@ -23,33 +23,46 @@ export class Character extends Component {
     private inputManager: InputManager = null!;
     @property({ type: DebugUIManager })
     private debugUIManager: DebugUIManager = null!;
+    @property({ type: HUDManager })
+    private hudManager: HUDManager = null!;
 
     @property({ type: CCInteger })
     private playerSpeed: number = 1;
+    @property({ type: CCInteger })
+    private jumpSpeed: number = 10;
 
-    @property({ type: Collider2D })
-    private collider2d: Collider2D = null!;
     @property({ type: RigidBody2D })
     private rigidBody2D: RigidBody2D = null!;
+    @property({ type: Collider2D })
+    private groundToucherCollider: Collider2D = null!;
 
     private impulse: number = 30;
     private state: CharacterState = null!;
+    private initPos: Vec3 = null!;
+    private onGround: boolean = true;
 
     start() {
-        this.collider2d.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-
         this.state = CharacterState.IDLE;
-        this.inputManager.node.on(INPUT_MANAGER_EVENT, (event: DinoInputEvent) => { this.onKeyDown(event); });
+
+        this.groundToucherCollider.node.on(Contact2DType.BEGIN_CONTACT,
+            (selfCollider: BoxCollider2D, otherCollider: BoxCollider2D, contact: IPhysics2DContact | null) => { this.onGround = true }, this);
+        this.groundToucherCollider.node.on(Contact2DType.END_CONTACT,
+            (selfCollider: BoxCollider2D, otherCollider: BoxCollider2D, contact: IPhysics2DContact | null) => { this.onGround = false }, this);
+
+        // 延迟加载，避免用到的node未加载的情况
+        setTimeout(() => {
+            this.inputManager.node.on(INPUT_MANAGER_EVENT, (event: DinoInputEvent) => { this.onKeyDown(event); });
+            this.rigidBody2D.linearVelocity = new Vec2(this.playerSpeed, 0);
+        }, 0.1);
+
     }
 
-    onBeginContact(selfCollider: BoxCollider2D, otherCollider: BoxCollider2D, contact: IPhysics2DContact | null) {
+    getDistance(): number {
+        if (this.initPos == null) {
+            return 0;
+        }
 
-        if (otherCollider.tag == Tags.ENEMY) {
-            this.debugUIManager.setPosLabel("begin colision enemy");
-        }
-        else {
-            this.debugUIManager.setPosLabel("begin colision " + otherCollider.tag);
-        }
+        return this.rigidBody2D.node.worldPosition.x - this.initPos.x;
     }
 
     onKeyDown(dinoInputEvent: DinoInputEvent) {
@@ -62,7 +75,8 @@ export class Character extends Component {
                 switch (dinoInputEvent) {
                     case DinoInputEvent.INPUT_EVENT_UP:
                         // 实现跳跃逻辑
-                        this.rigidBody2D.applyLinearImpulseToCenter(new Vec2(0, this.impulse), true);
+                        //this.rigidBody2D.applyLinearImpulseToCenter(new Vec2(0, this.impulse), true);
+                        this.rigidBody2D.linearVelocity = new Vec2(this.playerSpeed, this.jumpSpeed);
                         break;
                 }
 
@@ -75,6 +89,7 @@ export class Character extends Component {
     }
 
     update(deltaTime: number) {
+        this.updateUI();
         this.updatePhysics();
         this.updateSprite();
         this.updateState();
@@ -90,6 +105,10 @@ export class Character extends Component {
         this.state = newState;
     }
 
+    updateUI(): void {
+        this.hudManager.setDistance(this.getDistance());
+    }
+
     // 根据state, 调整sprite，比如FALLING，则使用下坠的图片
     updateSprite(): void {
 
@@ -97,6 +116,16 @@ export class Character extends Component {
 
     // 调整物理表现，调校手感
     updatePhysics(): void {
+        switch (this.state) {
+            case CharacterState.IDLE:
+                this.initPos = new Vec3(this.rigidBody2D.node.worldPosition.x, this.rigidBody2D.node.worldPosition.y, this.rigidBody2D.node.worldPosition.z);
+                break;
+            case CharacterState.RUNNING:
+
+                break;
+            default:
+                break;
+        }
 
     }
 
@@ -118,7 +147,7 @@ export class Character extends Component {
                 }
                 break;
             case CharacterState.FALLING:
-                if (this.rigidBody2D.linearVelocity.y == 0) {
+                if (this.onGround) {
                     this.changeState(CharacterState.RUNNING);
                 }
                 break;

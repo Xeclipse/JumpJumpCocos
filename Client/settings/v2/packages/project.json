@@ -5,6 +5,45 @@
     {
       "name": "DEBUG",
       "value": 1
+    },
+    {
+      "name": "DINO_HUD",
+      "value": 2
+    },
+    {
+      "name": "DINO_GAME_PLAY",
+      "value": 4
+    },
+    {
+      "name": "DINO_INVISIBLE",
+      "value": 8
     }
-  ]
+  ],
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "FOOD"
+      },
+      {
+        "index": 2,
+        "name": "EAT_ZONE"
+      },
+      {
+        "index": 3,
+        "name": "BODY_ZONE"
+      },
+      {
+        "index": 4,
+        "name": "GROUND"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 1,
+      "1": 4,
+      "2": 2,
+      "3": 16,
+      "4": 8
+    }
+  }
 }

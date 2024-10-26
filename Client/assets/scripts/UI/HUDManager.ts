@@ -16,6 +16,10 @@ export class HUDManager extends Component {
     update(deltaTime: number) {
 
     }
+
+    setDistance(dist: number): void {
+        this.distanceLabel.string = dist.toString();
+    }
 }
 
 
