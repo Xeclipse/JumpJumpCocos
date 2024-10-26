@@ -22,6 +22,7 @@ export enum CharacterState {
 const COLLIDER_TAG_BODY = 0;
 const COLLIDER_TAG_GROUND_TOUCHER = 1;
 const COLLIDER_TAG_EAT_ZONE = 2;
+const COLLIDER_TAG_BOTTOM_EAT_ZONE = 3;
 
 // 各类判定时长，单位：ms
 const TIME_RUNNING_EAT = 100;
@@ -49,6 +50,8 @@ export class Character extends Component {
     // for debug
     @property({ type: Sprite })
     private eatZoneSprite: Sprite = null!;
+    @property({ type: Sprite })
+    private bottomEatZoneSprite: Sprite = null!;
 
     private impulse: number = 30;
     private state: CharacterState = null!;
@@ -56,6 +59,7 @@ export class Character extends Component {
     private onGround: boolean = false;
 
     private eatZoneCollider: Collider2D = null!;
+    private bottomEatZoneCollider: Collider2D = null!;
 
     start() {
         this.state = CharacterState.IDLE;
@@ -78,6 +82,10 @@ export class Character extends Component {
                         this.eatZoneCollider = collider;
                         this.eatZoneCollider.enabled = false;
                         break;
+                    case COLLIDER_TAG_BOTTOM_EAT_ZONE:
+                        this.bottomEatZoneCollider = collider;
+                        this.bottomEatZoneCollider.enabled = false;
+                        break;
                 }
             });
 
@@ -87,16 +95,16 @@ export class Character extends Component {
 
     }
 
-    startEating(collider: Collider2D, duration: number) {
+    startEating(collider: Collider2D, duration: number, debugSprite: Sprite) {
         if (collider != null) {
             if (DINO_DBUG_MODE) {
-                this.eatZoneSprite.color = new Color(0xFF, 0, 0);
+                debugSprite.color = new Color(0xFF, 0, 0);
             }
             collider.enabled = true;
             setTimeout(() => {
                 collider.enabled = false
                 if (DINO_DBUG_MODE) {
-                    this.eatZoneSprite.color = new Color(0x3A, 0x79, 0xFF);
+                    debugSprite.color = new Color(0x3A, 0x79, 0xFF);
                 }
             }, duration);
         }
@@ -124,7 +132,10 @@ export class Character extends Component {
                         break;
                     case DinoInputEvent.INPUT_EVENT_RIGHT:
                         // 跑吃逻辑，启用eat zone，定时禁用
-                        this.startEating(this.eatZoneCollider, 100);
+                        this.startEating(this.eatZoneCollider, TIME_RUNNING_EAT, this.eatZoneSprite);
+                        break;
+                    case DinoInputEvent.INPUT_EVENT_DOWN:
+                        this.startEating(this.bottomEatZoneCollider, TIME_SLIDE_EAT, this.bottomEatZoneSprite);
                         break;
                 }
                 break;
@@ -149,7 +160,7 @@ export class Character extends Component {
         switch (this.state) {
             case CharacterState.JUMPING:
                 if (newState == CharacterState.JUMP_EATING) {
-                    this.startEating(this.eatZoneCollider, 100);
+                    this.startEating(this.eatZoneCollider, TIME_JUMP_EAT, this.eatZoneSprite);
                     break;
                 }
                 break;
