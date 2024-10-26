@@ -1,9 +1,9 @@
 import { _decorator, Component, instantiate, macro, log, Prefab, Vec3 } from 'cc';
 import { Character } from './Character';
 import { DinoInputEvent, InputManager } from './InputManager';
-import { DINO_EVENT_FOOD_ATE, DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
+import { DINO_EVENT_CHARACTER_DEAD, DINO_EVENT_FOOD_ATE, DINO_EVENT_FOOD_DESTROY, DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
 import { Food } from './Food';
-import { RandomUtil } from '../Utils';
+import { DINO_DBUG_MODE, RandomUtil } from '../Utils';
 const { ccclass, property } = _decorator;
 
 const TOP_HEIGHT = 30;
@@ -22,6 +22,7 @@ export class FoodSpawner extends Component {
 
     private initPos: Vec3 = null!;
     private genrateProb: number = 0.9;
+    private characterDead: boolean = false;
 
     start() {
         setTimeout(() => {
@@ -33,12 +34,18 @@ export class FoodSpawner extends Component {
             }, 1, macro.REPEAT_FOREVER);
         }, 0.1);
 
-        // for debug
-        this.inputManager.node.on(DINO_EVENT_INPUT_MANAGER, (eventID: DinoInputEvent) => {
-            if (eventID == DinoInputEvent.INPUT_EVENT_DEBUG_GEN_FOOD) {
-                this.genrateFood();
-            }
+        this.character.node.on(DINO_EVENT_CHARACTER_DEAD, () => {
+            this.characterDead = true;
         }, this);
+
+        // for debug, P to spawn food
+        if (DINO_DBUG_MODE) {
+            this.inputManager.node.on(DINO_EVENT_INPUT_MANAGER, (eventID: DinoInputEvent) => {
+                if (eventID == DinoInputEvent.INPUT_EVENT_DEBUG_GEN_FOOD) {
+                    this.genrateFood();
+                }
+            }, this);
+        }
 
     }
 
@@ -49,6 +56,9 @@ export class FoodSpawner extends Component {
     }
 
     genrateFood(): void {
+        if (this.characterDead) {
+            return;
+        }
         let foodNode = instantiate(this.foodPref);
         this.node.addChild(foodNode);
 
@@ -62,11 +72,19 @@ export class FoodSpawner extends Component {
         }
 
         foodNode.setPosition(0, height, this.node.position.z);
-        foodNode.on(DINO_EVENT_FOOD_ATE, (food: Food) => {
+        foodNode.on(DINO_EVENT_FOOD_DESTROY, (food: Food) => {
             setTimeout(() => {
                 this.node.removeChild(food.node);
                 food.node.destroy();
-            }, 0.1);
+            }, 1);
+        }, this);
+
+        foodNode.on(DINO_EVENT_FOOD_ATE, (food: Food) => {
+            this.character.eatFood(food);
+            setTimeout(() => {
+                this.node.removeChild(food.node);
+                food.node.destroy();
+            }, 1);
         }, this);
     }
 }

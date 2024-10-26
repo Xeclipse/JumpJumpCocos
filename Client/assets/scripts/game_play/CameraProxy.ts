@@ -24,9 +24,10 @@ export class CameraProxy extends Component {
     private initPos: Vec3 = null!;
 
     start() {
-        // 移除IVISIBLE图层
+        // 移除IVISIBLE和DEBUG图层
         if (!DINO_DBUG_MODE) {
             this.mainCamera.visibility &= ~CAMERA_LAYER_DINO_INVISIBLE;
+            this.mainCamera.visibility &= ~CAMERA_LAYER_DEBUG;
         }
 
         setTimeout(() => {

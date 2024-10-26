@@ -2,14 +2,15 @@ import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType
 import { DinoInputEvent, InputManager } from './InputManager';
 import { DebugUIManager } from '../UI/DebugUIManager';
 import { HUDManager } from '../UI/HUDManager';
-import { DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
+import { DINO_EVENT_CHARACTER_DEAD, DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
 import { DINO_DBUG_MODE } from '../Utils';
+import { Food } from './Food';
 const { ccclass, property } = _decorator;
 
 export enum CharacterState {
     IDLE = 0,
     RUNNING = 1,
-    RUNNING_EAT,
+    RUN_EATING,
     JUMPING,
     JUMP_EATING,
     FALLING,
@@ -47,6 +48,13 @@ export class Character extends Component {
     @property({ type: RigidBody2D })
     private characterRigidBody2D: RigidBody2D = null!;
 
+    @property({ type: CCInteger })
+    private characterHungerMax: number = 100;
+    @property({ type: CCInteger })
+    private characterHungerCost: number = 5;
+    @property({ type: CCInteger })
+    private characterHungerCurrent: number = 100;
+
     // for debug
     @property({ type: Sprite })
     private eatZoneSprite: Sprite = null!;
@@ -54,6 +62,7 @@ export class Character extends Component {
     private bottomEatZoneSprite: Sprite = null!;
 
     private impulse: number = 30;
+    private deltaCounter: number = 0;
     private state: CharacterState = null!;
     private initPos: Vec3 = null!;
     private onGround: boolean = false;
@@ -63,6 +72,7 @@ export class Character extends Component {
 
     start() {
         this.state = CharacterState.IDLE;
+        this.deltaCounter = 0;
 
         // 延迟加载，避免用到的node未加载的情况
         setTimeout(() => {
@@ -147,6 +157,7 @@ export class Character extends Component {
     }
 
     update(deltaTime: number) {
+        this.updateCharacterProperties(deltaTime);
         this.updateUI();
         this.updatePhysics();
         this.updateSprite();
@@ -157,6 +168,14 @@ export class Character extends Component {
     // 只在updateState中调用
     // 永远不要直接对this.state赋值
     private changeState(newState: CharacterState): void {
+        // 死亡逻辑，优先级高
+        if (newState == CharacterState.DEAD) {
+            this.state = newState;
+            this.characterRigidBody2D.linearVelocity = new Vec2(0, 0);
+            this.node.emit(DINO_EVENT_CHARACTER_DEAD);
+            return;
+        }
+
         switch (this.state) {
             case CharacterState.JUMPING:
                 if (newState == CharacterState.JUMP_EATING) {
@@ -168,8 +187,18 @@ export class Character extends Component {
         this.state = newState;
     }
 
+    updateCharacterProperties(delta: number) {
+        this.deltaCounter += delta;
+        if (this.deltaCounter > 1) {
+            this.deltaCounter -= 1;
+            this.characterHungerCurrent -= this.characterHungerCost;
+            this.hudManager.updateHunger(this.characterHungerCurrent, this.characterHungerMax, 0, 0);
+        }
+    }
+
     updateUI(): void {
-        this.hudManager.setDistance(this.getDistance());
+        this.hudManager.updateDistance(this.getDistance());
+        this.hudManager.updateScore(Math.round(this.getDistance() / 100));
     }
 
     // 根据state, 调整sprite，比如FALLING，则使用下坠的图片
@@ -199,7 +228,7 @@ export class Character extends Component {
             case CharacterState.RUNNING:
                 // 吃东西起作用，变到跑吃
                 if (this.eatZoneCollider.enabled) {
-                    this.changeState(CharacterState.RUNNING_EAT);
+                    this.changeState(CharacterState.RUN_EATING);
                     break;
                 }
 
@@ -211,7 +240,7 @@ export class Character extends Component {
 
 
                 break;
-            case CharacterState.RUNNING_EAT:
+            case CharacterState.RUN_EATING:
                 if (!this.eatZoneCollider.enabled) {
                     this.changeState(CharacterState.RUNNING);
                     break;
@@ -235,6 +264,18 @@ export class Character extends Component {
                 }
                 break;
         }
+
+        // 在非进食状态下，hunger <= 0，则死亡
+        if (this.state != CharacterState.JUMP_EATING &&
+            this.state != CharacterState.RUN_EATING &&
+            this.state != CharacterState.SLIDE_EATING &&
+            this.characterHungerCurrent <= 0) {
+            this.changeState(CharacterState.DEAD);
+        }
+    }
+
+    public eatFood(food: Food): void {
+        this.characterHungerCurrent += food.getHunger();
     }
 }
 

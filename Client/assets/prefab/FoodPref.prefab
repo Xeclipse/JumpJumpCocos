@@ -320,6 +320,7 @@
       "__id__": 9
     },
     "foodSpeed": 3,
+    "foodHunger": 5,
     "_id": ""
   },
   {

@@ -1,5 +1,6 @@
 import { _decorator, CCInteger, Collider2D, Component, Contact2DType, log, RigidBody2D, Vec2, BoxCollider2D, IPhysics2DContact } from 'cc';
-import { DINO_EVENT_FOOD_ATE } from '../DinoStringTable';
+import { DINO_EVENT_FOOD_ATE, DINO_EVENT_FOOD_DESTROY } from '../DinoStringTable';
+import { GROUP_EAT_ZONE } from '../PhysicsVars';
 const { ccclass, property } = _decorator;
 
 @ccclass('Food')
@@ -11,6 +12,8 @@ export class Food extends Component {
 
     @property({ type: CCInteger })
     private foodSpeed: number = 0;
+    @property({ type: CCInteger })
+    private foodHunger: number = 10;
 
     start() {
         setTimeout(() => {
@@ -18,12 +21,20 @@ export class Food extends Component {
         }, 0.1);
 
         this.collider.on(Contact2DType.BEGIN_CONTACT, (selfCollider: BoxCollider2D, otherCollider: BoxCollider2D, contact: IPhysics2DContact | null) => {
-            this.node.emit(DINO_EVENT_FOOD_ATE, this);
+            if (otherCollider.group == GROUP_EAT_ZONE) {
+                this.node.emit(DINO_EVENT_FOOD_ATE, this);
+            } else {
+                this.node.emit(DINO_EVENT_FOOD_DESTROY, this);
+            }
         }, this);
     }
 
     update(deltaTime: number) {
 
+    }
+
+    public getHunger(): number {
+        return this.foodHunger;
     }
 }
 
