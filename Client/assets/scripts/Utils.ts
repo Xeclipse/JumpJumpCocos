@@ -1,5 +1,7 @@
 import { log } from "cc";
 
+export const DINO_DBUG_MODE: boolean = true;
+
 export class RandomUtil {
     public static checkProbability(probability: number): boolean {
         if (probability > 1 || probability < 0) {

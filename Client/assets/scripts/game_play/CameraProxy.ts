@@ -1,7 +1,12 @@
 import { _decorator, Camera, Component, log, Vec3, Node, CCFloat } from 'cc';
 import { Character } from './Character';
+import { DINO_DBUG_MODE } from '../Utils';
 const { ccclass, property } = _decorator;
 
+const CAMERA_LAYER_DEBUG = 1;
+const CAMERA_LAYER_DINO_HUD = 1 << 1;
+const CAMERA_LAYER_DINO_GAME_PLAY = 1 << 2;
+const CAMERA_LAYER_DINO_INVISIBLE = 1 << 3;
 
 // 控制camera的行为
 // camera随着角色横向移动
@@ -19,6 +24,11 @@ export class CameraProxy extends Component {
     private initPos: Vec3 = null!;
 
     start() {
+        // 移除IVISIBLE图层
+        if (!DINO_DBUG_MODE) {
+            this.mainCamera.visibility &= ~CAMERA_LAYER_DINO_INVISIBLE;
+        }
+
         setTimeout(() => {
             this.initPos = new Vec3(this.mainCamera.node.position.x + 250, this.mainCamera.node.position.y, this.mainCamera.node.position.z);
             this.mainCamera.orthoHeight = this.cameraHeight;

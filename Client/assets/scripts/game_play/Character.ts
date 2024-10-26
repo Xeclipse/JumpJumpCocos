@@ -1,8 +1,9 @@
-import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, IPhysics2DContact, RigidBody2D, Vec2, Vec3, CCInteger, log } from 'cc';
+import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, IPhysics2DContact, RigidBody2D, Vec2, Vec3, CCInteger, log, Sprite, Color } from 'cc';
 import { DinoInputEvent, InputManager } from './InputManager';
 import { DebugUIManager } from '../UI/DebugUIManager';
 import { HUDManager } from '../UI/HUDManager';
 import { DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
+import { DINO_DBUG_MODE } from '../Utils';
 const { ccclass, property } = _decorator;
 
 export enum CharacterState {
@@ -22,6 +23,11 @@ const COLLIDER_TAG_BODY = 0;
 const COLLIDER_TAG_GROUND_TOUCHER = 1;
 const COLLIDER_TAG_EAT_ZONE = 2;
 
+// 各类判定时长，单位：ms
+const TIME_RUNNING_EAT = 100;
+const TIME_JUMP_EAT = 100;
+const TIME_SLIDE_EAT = 100;
+
 // 记录角色状态，速度、饥饿值、当前动画等
 @ccclass('Character')
 export class Character extends Component {
@@ -39,6 +45,10 @@ export class Character extends Component {
 
     @property({ type: RigidBody2D })
     private characterRigidBody2D: RigidBody2D = null!;
+
+    // for debug
+    @property({ type: Sprite })
+    private eatZoneSprite: Sprite = null!;
 
     private impulse: number = 30;
     private state: CharacterState = null!;
@@ -77,6 +87,21 @@ export class Character extends Component {
 
     }
 
+    startEating(collider: Collider2D, duration: number) {
+        if (collider != null) {
+            if (DINO_DBUG_MODE) {
+                this.eatZoneSprite.color = new Color(0xFF, 0, 0);
+            }
+            collider.enabled = true;
+            setTimeout(() => {
+                collider.enabled = false
+                if (DINO_DBUG_MODE) {
+                    this.eatZoneSprite.color = new Color(0x3A, 0x79, 0xFF);
+                }
+            }, duration);
+        }
+    }
+
     getDistance(): number {
         if (this.initPos == null) {
             return 0;
@@ -99,10 +124,7 @@ export class Character extends Component {
                         break;
                     case DinoInputEvent.INPUT_EVENT_RIGHT:
                         // 跑吃逻辑，启用eat zone，定时禁用
-                        if (this.eatZoneCollider != null) {
-                            this.eatZoneCollider.enabled = true;
-                            setTimeout(() => { this.eatZoneCollider.enabled = false }, 100);
-                        }
+                        this.startEating(this.eatZoneCollider, 100);
                         break;
                 }
                 break;
@@ -125,7 +147,12 @@ export class Character extends Component {
     // 永远不要直接对this.state赋值
     private changeState(newState: CharacterState): void {
         switch (this.state) {
-
+            case CharacterState.JUMPING:
+                if (newState == CharacterState.JUMP_EATING) {
+                    this.startEating(this.eatZoneCollider, 100);
+                    break;
+                }
+                break;
         }
         this.state = newState;
     }
@@ -180,8 +207,14 @@ export class Character extends Component {
                 }
                 break;
             case CharacterState.JUMPING:
-                // TODO: 实现跳吃东西的功能，应该在跳跃开始以后多少秒，切换到JUMP_EATING
+                // 实现跳吃东西的功能，跳跃到最高点，切换到JUMP_EATING
                 if (this.characterRigidBody2D.linearVelocity.y <= 0) {
+                    this.changeState(CharacterState.JUMP_EATING);
+                }
+                break;
+            case CharacterState.JUMP_EATING:
+                // 结束吃逻辑时，进入FALLING
+                if (this.eatZoneCollider.enabled == false) {
                     this.changeState(CharacterState.FALLING);
                 }
                 break;

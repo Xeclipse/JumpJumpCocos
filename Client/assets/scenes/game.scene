@@ -1639,7 +1639,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "ground_toucher",
+    "_name": "GroundToucher",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -1751,7 +1751,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "eat_zone",
+    "_name": "EatZone",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -1906,6 +1906,9 @@
     "jumpSpeed": 10,
     "characterRigidBody2D": {
       "__id__": 60
+    },
+    "eatZoneSprite": {
+      "__id__": 51
     },
     "_id": "f6Ez66s4pLbrClJZJNZT9V"
   },
