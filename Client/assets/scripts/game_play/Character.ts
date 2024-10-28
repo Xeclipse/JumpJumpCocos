@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, IPhysics2DContact, RigidBody2D, Vec2, Vec3, CCInteger, log, Sprite, Color } from 'cc';
+import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, IPhysics2DContact, RigidBody2D, Vec2, Vec3, CCInteger, log, Sprite, Color, Animation } from 'cc';
 import { DinoInputEvent, InputManager } from './InputManager';
 import { DebugUIManager } from '../UI/DebugUIManager';
 import { HUDManager } from '../UI/HUDManager';
@@ -25,6 +25,12 @@ const COLLIDER_TAG_GROUND_TOUCHER = 1;
 const COLLIDER_TAG_EAT_ZONE = 2;
 const COLLIDER_TAG_BOTTOM_EAT_ZONE = 3;
 
+const ANIM_NAME_STAND = 'debug_anim_stand'
+const ANIM_NAME_RUNNING = 'debug_anim_running'
+const ANIM_NAME_JUMPING = 'debug_anim_jumping'
+const ANIM_NAME_SLIDING = 'debug_anim_slide'
+const ANIM_NAME_DEAD = 'debug_anim_dead'
+const ANIM_NAME_FALLING = 'debug_anim_falling'
 
 // 记录角色状态，速度、饥饿值、当前动画等
 @ccclass('Character')
@@ -75,9 +81,12 @@ export class Character extends Component {
     private TIME_SLIDE_EAT = 100;
     private TIME_SLIDE_PRECISE_EAT = 50;
 
+    private characterAnim: Animation = null!;
+
     start() {
         this.state = CharacterState.IDLE;
         this.deltaCounter = 0;
+        this.characterAnim = this.node.getComponent(Animation);
 
         // 延迟加载，避免用到的node未加载的情况
         setTimeout(() => {
@@ -104,7 +113,9 @@ export class Character extends Component {
                 }
             });
 
-            this.inputManager.node.on(DINO_EVENT_INPUT_MANAGER, (event: DinoInputEvent) => { this.onKeyDown(event); });
+            this.inputManager.node.on(DINO_EVENT_INPUT_MANAGER, (event: DinoInputEvent) => {
+                this.onKeyDown(event);
+            });
             this.characterRigidBody2D.linearVelocity = new Vec2(this.playerSpeed, 0);
         }, 0.1);
 
@@ -152,18 +163,14 @@ export class Character extends Component {
                 break;
             case CharacterState.RUNNING:
                 // 响应跳跃、滑铲、原地吃饭输入
-                switch (dinoInputEvent) {
-                    case DinoInputEvent.INPUT_EVENT_UP:
-                        // 实现跳跃逻辑
-                        this.characterRigidBody2D.linearVelocity = new Vec2(this.playerSpeed, this.jumpSpeed);
-                        break;
-                    case DinoInputEvent.INPUT_EVENT_RIGHT:
-                        // 跑吃逻辑，启用eat zone，定时禁用
-                        this.startEating(this.eatZoneCollider, this.TIME_RUNNING_EAT, this.TIME_RUNNING_PRECISE_EAT, this.eatZoneSprite);
-                        break;
-                    case DinoInputEvent.INPUT_EVENT_DOWN:
-                        this.startEating(this.bottomEatZoneCollider, this.TIME_SLIDE_EAT, this.TIME_SLIDE_PRECISE_EAT, this.bottomEatZoneSprite);
-                        break;
+                if (dinoInputEvent == DinoInputEvent.INPUT_EVENT_UP) {
+                    // 实现跳跃逻辑
+                    this.characterRigidBody2D.linearVelocity = new Vec2(this.playerSpeed, this.jumpSpeed);
+                } else if (dinoInputEvent == DinoInputEvent.INPUT_EVENT_RIGHT) {
+                    // 跑吃逻辑，启用eat zone，定时禁用
+                    this.startEating(this.eatZoneCollider, this.TIME_RUNNING_EAT, this.TIME_RUNNING_PRECISE_EAT, this.eatZoneSprite);
+                } else if (dinoInputEvent == DinoInputEvent.INPUT_EVENT_DOWN) {
+                    this.startEating(this.bottomEatZoneCollider, this.TIME_SLIDE_EAT, this.TIME_SLIDE_PRECISE_EAT, this.bottomEatZoneSprite);
                 }
                 break;
             case CharacterState.FALLING:
@@ -225,9 +232,39 @@ export class Character extends Component {
         this.hudManager.updateScore(Math.round(this.getDistance() / 100));
     }
 
+    private changeToAnim(animName: string) {
+        if (!this.characterAnim.getState(animName).isPlaying) {
+            this.characterAnim.stop();
+            this.characterAnim.play(animName);
+        }
+    }
+
     // 根据state, 调整sprite，比如FALLING，则使用下坠的图片
     updateSprite(): void {
+        if (this.characterAnim == null) {
+            return;
+        }
 
+        switch (this.state) {
+            case CharacterState.DEAD:
+                this.changeToAnim(ANIM_NAME_DEAD);
+                break;
+            case CharacterState.FALLING:
+                this.changeToAnim(ANIM_NAME_FALLING);
+                break;
+            case CharacterState.JUMPING:
+                this.changeToAnim(ANIM_NAME_JUMPING);
+                break;
+            case CharacterState.RUNNING:
+                this.changeToAnim(ANIM_NAME_RUNNING);
+                break;
+            case CharacterState.SLIDE_EATING:
+                this.changeToAnim(ANIM_NAME_SLIDING);
+                break;
+            case CharacterState.IDLE:
+                this.changeToAnim(ANIM_NAME_STAND);
+                break;
+        }
     }
 
     // 调整物理表现，调校手感
@@ -262,7 +299,16 @@ export class Character extends Component {
                     break;
                 }
 
-
+                if (this.bottomEatZoneCollider.enabled) {
+                    this.changeState(CharacterState.SLIDE_EATING);
+                    break;
+                }
+                break;
+            case CharacterState.SLIDE_EATING:
+                if (!this.bottomEatZoneCollider.enabled) {
+                    this.changeState(CharacterState.RUNNING);
+                    break;
+                }
                 break;
             case CharacterState.RUN_EATING:
                 if (!this.eatZoneCollider.enabled) {

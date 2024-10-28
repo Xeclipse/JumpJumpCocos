@@ -3,8 +3,8 @@ import { DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
 const { ccclass, property } = _decorator;
 
 export enum DinoInputEvent {
-    INPUT_EVENT_IDLE,
-    INPUT_EVENT_UP,
+    INPUT_EVENT_IDLE = 0,
+    INPUT_EVENT_UP = 1,
     INPUT_EVENT_RIGHT,
     INPUT_EVENT_DOWN,
     INPUT_EVENT_DEBUG_GEN_FOOD,
@@ -40,7 +40,9 @@ export class InputManager extends Component {
         }, this);
     }
 
-
+    public triggerEvent(event: Event, eventID: DinoInputEvent) {
+        this.node.emit(DINO_EVENT_INPUT_MANAGER, eventID);
+    }
 }
 
 
