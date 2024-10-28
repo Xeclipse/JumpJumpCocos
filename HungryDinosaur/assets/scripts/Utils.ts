@@ -1,6 +1,6 @@
 import { log } from "cc";
 
-export const DINO_DBUG_MODE: boolean = true;
+export const DINO_DBUG_MODE: boolean = false;
 
 export class RandomUtil {
     public static checkProbability(probability: number): boolean {

@@ -19,7 +19,7 @@ export class CameraProxy extends Component {
     @property({ type: Character })
     private character: Character = null!;
     @property({ type: CCFloat })
-    private cameraHeight: number = 200;
+    private cameraHeight: number = 100;
 
     private initPos: Vec3 = null!;
 
@@ -32,7 +32,7 @@ export class CameraProxy extends Component {
 
         setTimeout(() => {
             this.initPos = new Vec3(this.mainCamera.node.position.x + 250, this.mainCamera.node.position.y, this.mainCamera.node.position.z);
-            this.mainCamera.orthoHeight = this.cameraHeight;
+            //this.mainCamera.orthoHeight = this.cameraHeight;
         }, 1);
     }
 

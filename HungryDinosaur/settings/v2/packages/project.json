@@ -65,5 +65,13 @@
       "7": 256,
       "8": 130
     }
+  },
+  "general": {
+    "designResolution": {
+      "fitHeight": false,
+      "fitWidth": false,
+      "width": 1080,
+      "height": 1920
+    }
   }
 }

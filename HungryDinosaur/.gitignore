@@ -8,3 +8,6 @@
 **/temp/
 **/library/
 **/profiles/
+
+# build
+build/
