@@ -4,8 +4,8 @@ import { Character } from './Character';
 import { GROUP_DEADZONE } from '../PhysicsVars';
 const { ccclass, property } = _decorator;
 
-@ccclass('Map')
-export class Map extends Component {
+@ccclass('DinoMap')
+export class DinoMap extends Component {
     @property({ type: DebugUIManager })
     debugUIManager: DebugUIManager = null!;
 
@@ -20,9 +20,7 @@ export class Map extends Component {
     private groundNodeInitPos: Vec3 = null!;
 
     start() {
-        setTimeout(() => {
-            this.groundNodeInitPos = new Vec3(this.groundNode.position.x, this.groundNode.position.y, this.groundNode.position.z);
-        }, 0.1);
+
     }
 
     update(deltaTime: number) {
@@ -32,7 +30,11 @@ export class Map extends Component {
         }
 
         this.deadZoneBody.node.setPosition(this.character.node.position.x - 800, this.deadZoneBody.node.position.y, this.deadZoneBody.node.position.z);
+    }
 
-
+    public initArgs(): void {
+        setTimeout(() => {
+            this.groundNodeInitPos = new Vec3(this.groundNode.position.x, this.groundNode.position.y, this.groundNode.position.z);
+        }, 0.1);
     }
 }

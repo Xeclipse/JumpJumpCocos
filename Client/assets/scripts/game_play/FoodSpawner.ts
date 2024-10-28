@@ -22,9 +22,10 @@ export class FoodSpawner extends Component {
 
     private initPos: Vec3 = null!;
     private genrateProb: number = 0.9;
-    private characterDead: boolean = false;
+    private isSpawning: boolean = false;
 
     start() {
+        this.isSpawning = false;
         setTimeout(() => {
             this.initPos = new Vec3(this.node.position.x + 500, this.node.position.y, this.node.position.z);
             this.schedule(() => {
@@ -33,10 +34,6 @@ export class FoodSpawner extends Component {
                 }
             }, 1, macro.REPEAT_FOREVER);
         }, 0.1);
-
-        this.character.node.on(DINO_EVENT_CHARACTER_DEAD, () => {
-            this.characterDead = true;
-        }, this);
 
         // for debug, P to spawn food
         if (DINO_DBUG_MODE) {
@@ -55,8 +52,12 @@ export class FoodSpawner extends Component {
         }
     }
 
+    public setSpawn(isSpawningArg: boolean): void {
+        this.isSpawning = isSpawningArg;
+    }
+
     genrateFood(): void {
-        if (this.characterDead) {
+        if (!this.isSpawning) {
             return;
         }
         let foodNode = instantiate(this.foodPref);

@@ -43,6 +43,10 @@ export class CameraProxy extends Component {
 
         this.mainCamera.node.setPosition(this.initPos.x + this.character.getDistance(), this.initPos.y, this.initPos.z);
     }
+
+    resetPos(): void {
+        this.initPos = new Vec3(this.mainCamera.node.position.x, this.mainCamera.node.position.y, this.mainCamera.node.position.z);
+    }
 }
 
 

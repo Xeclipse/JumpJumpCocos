@@ -39,8 +39,6 @@ export class Character extends Component {
     private inputManager: InputManager = null!;
     @property({ type: DebugUIManager })
     private debugUIManager: DebugUIManager = null!;
-    @property({ type: HUDManager })
-    private hudManager: HUDManager = null!;
 
     @property({ type: CCInteger })
     private playerSpeed: number = 1;
@@ -55,7 +53,7 @@ export class Character extends Component {
     @property({ type: CCInteger })
     private characterHungerCost: number = 5;
     @property({ type: CCInteger })
-    private characterHungerCurrent: number = 100;
+    private characterHungerInit: number = 100;
 
     // for debug
     @property({ type: Sprite })
@@ -67,6 +65,7 @@ export class Character extends Component {
     private deltaCounter: number = 0;
     private state: CharacterState = null!;
     private initPos: Vec3 = null!;
+    private currentHunger: number = 0;
     private onGround: boolean = false;
     private isPrecise: boolean = false;
 
@@ -82,10 +81,27 @@ export class Character extends Component {
     private TIME_SLIDE_PRECISE_EAT = 50;
 
     private characterAnim: Animation = null!;
+    private isPlaying: boolean = false;
+
+    initArgs() {
+        this.initPos = new Vec3(this.characterRigidBody2D.node.position.x, this.characterRigidBody2D.node.position.y, this.characterRigidBody2D.node.position.z);
+        this.currentHunger = this.characterHungerInit;
+        this.deltaCounter = 0;
+    }
+
+    public getCurrentHunger(): number {
+        return this.currentHunger;
+    }
+
+    public getMaxHunger(): number {
+        return this.characterHungerMax;
+    }
 
     start() {
         this.state = CharacterState.IDLE;
-        this.deltaCounter = 0;
+        this.isPlaying = false;
+        this.initArgs();
+
         this.characterAnim = this.node.getComponent(Animation);
 
         // 延迟加载，避免用到的node未加载的情况
@@ -116,7 +132,6 @@ export class Character extends Component {
             this.inputManager.node.on(DINO_EVENT_INPUT_MANAGER, (event: DinoInputEvent) => {
                 this.onKeyDown(event);
             });
-            this.characterRigidBody2D.linearVelocity = new Vec2(this.playerSpeed, 0);
         }, 0.1);
 
     }
@@ -153,7 +168,7 @@ export class Character extends Component {
             return 0;
         }
 
-        return this.characterRigidBody2D.node.worldPosition.x - this.initPos.x;
+        return this.characterRigidBody2D.node.position.x - this.initPos.x;
     }
 
     onKeyDown(dinoInputEvent: DinoInputEvent) {
@@ -166,6 +181,7 @@ export class Character extends Component {
                 if (dinoInputEvent == DinoInputEvent.INPUT_EVENT_UP) {
                     // 实现跳跃逻辑
                     this.characterRigidBody2D.linearVelocity = new Vec2(this.playerSpeed, this.jumpSpeed);
+                    //this.characterRigidBody2D.applyLinearImpulseToCenter(new Vec2(0,this.impulse),true);
                 } else if (dinoInputEvent == DinoInputEvent.INPUT_EVENT_RIGHT) {
                     // 跑吃逻辑，启用eat zone，定时禁用
                     this.startEating(this.eatZoneCollider, this.TIME_RUNNING_EAT, this.TIME_RUNNING_PRECISE_EAT, this.eatZoneSprite);
@@ -182,8 +198,6 @@ export class Character extends Component {
 
     update(deltaTime: number) {
         this.updateCharacterProperties(deltaTime);
-        this.updateUI();
-        this.updatePhysics();
         this.updateSprite();
         this.updateState();
     }
@@ -192,6 +206,9 @@ export class Character extends Component {
     // 只在updateState中调用
     // 永远不要直接对this.state赋值
     private changeState(newState: CharacterState): void {
+        if (this.state == newState) {
+            return;
+        }
         // 死亡逻辑，优先级高
         if (newState == CharacterState.DEAD) {
             this.state = newState;
@@ -207,10 +224,21 @@ export class Character extends Component {
             this.isPrecise = false;
         }
 
+        if (newState == CharacterState.IDLE) {
+            this.initArgs();
+            this.node.setPosition(this.initPos.x, this.initPos.y + 20, this.initPos.z);
+        }
+
         switch (this.state) {
             case CharacterState.JUMPING:
                 if (newState == CharacterState.JUMP_EATING) {
                     this.startEating(this.eatZoneCollider, this.TIME_JUMP_EAT, this.TIME_JUMP_PRECISE_EAT, this.eatZoneSprite);
+                    break;
+                }
+                break;
+            case CharacterState.IDLE:
+                if (newState == CharacterState.RUNNING) {
+                    this.characterRigidBody2D.linearVelocity = new Vec2(this.playerSpeed, 0);
                     break;
                 }
                 break;
@@ -219,17 +247,14 @@ export class Character extends Component {
     }
 
     updateCharacterProperties(delta: number) {
+        if (this.state == CharacterState.IDLE || this.state == CharacterState.DEAD) {
+            return;
+        }
         this.deltaCounter += delta;
         if (this.deltaCounter > 1) {
             this.deltaCounter -= 1;
-            this.characterHungerCurrent -= this.characterHungerCost;
-            this.hudManager.updateHunger(this.characterHungerCurrent, this.characterHungerMax, 0, 0);
+            this.currentHunger -= this.characterHungerCost;
         }
-    }
-
-    updateUI(): void {
-        this.hudManager.updateDistance(this.getDistance());
-        this.hudManager.updateScore(Math.round(this.getDistance() / 100));
     }
 
     private changeToAnim(animName: string) {
@@ -267,24 +292,12 @@ export class Character extends Component {
         }
     }
 
-    // 调整物理表现，调校手感
-    updatePhysics(): void {
-        switch (this.state) {
-            case CharacterState.IDLE:
-                this.initPos = new Vec3(this.characterRigidBody2D.node.worldPosition.x, this.characterRigidBody2D.node.worldPosition.y, this.characterRigidBody2D.node.worldPosition.z);
-                break;
-            case CharacterState.RUNNING:
-
-                break;
-            default:
-                break;
-        }
-    }
-
     updateState(): void {
         switch (this.state) {
             case CharacterState.IDLE:
-                this.changeState(CharacterState.RUNNING);
+                if (this.isPlaying) {
+                    this.changeState(CharacterState.RUNNING);
+                }
                 break;
             case CharacterState.RUNNING:
                 // 吃东西起作用，变到跑吃
@@ -339,13 +352,22 @@ export class Character extends Component {
         if (this.state != CharacterState.JUMP_EATING &&
             this.state != CharacterState.RUN_EATING &&
             this.state != CharacterState.SLIDE_EATING &&
-            this.characterHungerCurrent <= 0) {
+            this.currentHunger <= 0) {
             this.changeState(CharacterState.DEAD);
         }
     }
 
     public eatFood(food: Food): void {
-        this.characterHungerCurrent += food.getHunger(this.isPrecise);
+        this.currentHunger += food.getHunger(this.isPrecise);
+    }
+
+    public isDead(): boolean {
+        return this.state == CharacterState.DEAD;
+    }
+
+    public startPlay(): void {
+        this.isPlaying = true;
+        this.changeState(CharacterState.IDLE);
     }
 }
 
