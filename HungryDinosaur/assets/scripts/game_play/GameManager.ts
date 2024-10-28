@@ -59,7 +59,10 @@ export class GameManager extends Component {
             return;
         }
         if (newState == GameState.PLAYING) {
+            this.cemaraProxy.resetPos();
+            this.dinoMap.initArgs();
             this.character.startPlay();
+            this.foodSpawner.resetInit();
             this.foodSpawner.setSpawn(true);
         }
 
@@ -114,8 +117,7 @@ export class GameManager extends Component {
     }
 
     onStartGame() {
-        this.cemaraProxy.resetPos();
-        this.dinoMap.initArgs();
+
         this.queryStart = true;
     }
 }

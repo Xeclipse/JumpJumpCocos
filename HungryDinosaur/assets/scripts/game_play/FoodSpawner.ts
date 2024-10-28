@@ -56,6 +56,11 @@ export class FoodSpawner extends Component {
         this.isSpawning = isSpawningArg;
     }
 
+    resetInit() {
+        this.node.destroyAllChildren();
+        this.initPos = new Vec3(this.node.position.x, this.node.position.y, this.node.position.z);
+    }
+
     genrateFood(): void {
         if (!this.isSpawning) {
             return;
