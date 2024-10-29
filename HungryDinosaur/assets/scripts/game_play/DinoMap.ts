@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, ImageAsset, instantiate, IPhysics2DContact, Label, Node, Prefab, RigidBody, RigidBody2D, Sprite, SpriteFrame, Vec2, Vec3 } from 'cc';
+import { _decorator, BoxCollider2D, log, Component, Contact2DType, ImageAsset, instantiate, IPhysics2DContact, Label, Node, Prefab, RigidBody, RigidBody2D, Sprite, SpriteFrame, Vec2, Vec3 } from 'cc';
 import { DebugUIManager } from '../UI/DebugUIManager';
 import { Character } from './Character';
 import { GROUP_DEADZONE } from '../PhysicsVars';
@@ -18,23 +18,25 @@ export class DinoMap extends Component {
     private deadZoneBody: RigidBody2D = null!;
 
     private groundNodeInitPos: Vec3 = null!;
+    private deadZoneDist: number = 0;
 
     start() {
-
+        
     }
 
     update(deltaTime: number) {
         // 让地面跟着角色，让角色不会掉下去
         if (this.groundNodeInitPos != null) {
             this.groundNode.setPosition(this.groundNodeInitPos.x + this.character.getDistance(), this.groundNodeInitPos.y, this.groundNodeInitPos.z);
-        }
 
-        this.deadZoneBody.node.setPosition(this.character.node.position.x - 800, this.deadZoneBody.node.position.y, this.deadZoneBody.node.position.z);
+            this.deadZoneBody.node.setPosition(this.character.node.position.x - this.deadZoneDist, this.deadZoneBody.node.position.y, this.deadZoneBody.node.position.z);
+        }
     }
 
     public initArgs(): void {
         setTimeout(() => {
             this.groundNodeInitPos = new Vec3(this.groundNode.position.x, this.groundNode.position.y, this.groundNode.position.z);
-        }, 0.1);
+            this.deadZoneDist = this.character.node.position.x - this.deadZoneBody.node.position.x;
+        }, 1);
     }
 }

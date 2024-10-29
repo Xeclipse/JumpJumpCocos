@@ -35,7 +35,8 @@ export class GameManager extends Component {
     private playUI: Node = null;
     @property({ type: Node })
     private hudUI: Node = null;
-    @property({ type: Node })
+
+
     private deadUINode: Node = null;
 
     private gameState: GameState = GameState.MAIN_MENU;
@@ -47,6 +48,7 @@ export class GameManager extends Component {
     start() {
         this.gameState = GameState.MAIN_MENU;
         this.queryStart = false;
+        this.deadUINode = this.deadUIManager?.node;
     }
 
     update(deltaTime: number) {
