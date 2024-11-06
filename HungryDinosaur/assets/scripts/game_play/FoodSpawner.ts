@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, macro, log, Prefab, Vec3 } from 'cc';
+import { _decorator, Component, instantiate, macro, Node, Prefab, Vec3 } from 'cc';
 import { Character } from './Character';
 import { DinoInputEvent, InputManager } from './InputManager';
 import { DINO_EVENT_CHARACTER_DEAD, DINO_EVENT_FOOD_ATE, DINO_EVENT_FOOD_DESTROY, DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
@@ -23,6 +23,7 @@ export class FoodSpawner extends Component {
     private initPos: Vec3 = null!;
     private genrateProb: number = 0.9;
     private isSpawning: boolean = false;
+    private isInit: boolean = true;
 
     start() {
         this.isSpawning = false;
@@ -58,12 +59,34 @@ export class FoodSpawner extends Component {
 
     resetInit() {
         this.node.destroyAllChildren();
-        this.initPos = new Vec3(this.node.position.x, this.node.position.y, this.node.position.z);
+        if (this.initPos == null) {
+            this.initPos = new Vec3();
+        }
+        this.initPos.set(this.node.position.x, this.node.position.y, this.node.position.z);
+        this.isInit = true;
     }
 
-    genrateFood(): void {
+    // 生成初始食物，在角色面前
+    generateInitFoods(): void {
+        for (let i = 0; i < 5; i++) {
+            let foodNode: Node = this.genrateFood();
+            if (foodNode == null) {
+                continue;
+            }
+            let tmp = foodNode.position.clone()
+
+            foodNode.position.set(tmp.x - 300 + foodNode?.getComponent(Food).getSpeed() * 20 * i, tmp.y, tmp.z);
+        }
+    }
+
+    genrateFood(): Node | null {
         if (!this.isSpawning) {
-            return;
+            return null;
+        }
+
+        if (this.isInit) {
+            this.isInit = false;
+            this.generateInitFoods();
         }
         let foodNode = instantiate(this.foodPref);
         this.node.addChild(foodNode);
@@ -92,6 +115,8 @@ export class FoodSpawner extends Component {
                 food.node.destroy();
             }, 1);
         }, this);
+
+        return foodNode;
     }
 }
 

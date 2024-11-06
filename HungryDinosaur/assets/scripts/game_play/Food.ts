@@ -35,6 +35,10 @@ export class Food extends Component {
 
     }
 
+    public getSpeed(): number {
+        return this.foodSpeed;
+    }
+
     public getHunger(isPrecise: boolean): number {
         return isPrecise ? this.foodHungerPrecise : this.foodHunger;
     }
