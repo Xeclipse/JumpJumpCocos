@@ -5,6 +5,7 @@ import { HUDManager } from '../UI/HUDManager';
 import { DINO_EVENT_CHARACTER_DEAD, DINO_EVENT_INPUT_MANAGER } from '../DinoStringTable';
 import { DINO_DBUG_MODE } from '../Utils';
 import { Food } from './Food';
+import { AudioManager, DinoSFX } from './AudioManager';
 const { ccclass, property } = _decorator;
 
 export enum CharacterState {
@@ -39,6 +40,8 @@ export class Character extends Component {
     private inputManager: InputManager = null!;
     @property({ type: DebugUIManager })
     private debugUIManager: DebugUIManager = null!;
+    @property({ type: AudioManager })
+    private audioManager: AudioManager = null!;
 
     @property({ type: CCInteger })
     private playerSpeed: number = 1;
@@ -243,6 +246,20 @@ export class Character extends Component {
                 }
                 break;
         }
+
+        // play sounds
+        switch (newState) {
+            case CharacterState.JUMPING:
+                this.audioManager.playSFX(DinoSFX.JUMP);
+                break;
+            case CharacterState.RUN_EATING:
+                this.audioManager.playSFX(DinoSFX.RUN_EAT);
+                break;
+            case CharacterState.SLIDE_EATING:
+                this.audioManager.playSFX(DinoSFX.SLIDE);
+                break;
+        }
+
         this.state = newState;
     }
 

@@ -16,6 +16,8 @@ const CAMERA_LAYER_DINO_INVISIBLE = 1 << 3;
 export class CameraProxy extends Component {
     @property({ type: Camera })
     private mainCamera: Camera = null!;
+    @property({ type: Camera })
+    private UICamera: Camera = null!;
     @property({ type: Character })
     private character: Character = null!;
     @property({ type: CCFloat })
@@ -28,6 +30,9 @@ export class CameraProxy extends Component {
         if (!DINO_DBUG_MODE) {
             this.mainCamera.visibility &= ~CAMERA_LAYER_DINO_INVISIBLE;
             this.mainCamera.visibility &= ~CAMERA_LAYER_DEBUG;
+
+            this.UICamera.visibility &= ~CAMERA_LAYER_DINO_INVISIBLE;
+            this.UICamera.visibility &= ~CAMERA_LAYER_DEBUG;
         }
 
         setTimeout(() => {
