@@ -284,7 +284,6 @@ export class Character extends Component {
         this.sizeScale = 0.25+(this.getCurrentHunger()/this.getMaxHunger())*0.75;
         let nowSize = this.node.getComponent(UITransform).contentSize;
         this.body.getComponent(UITransform).contentSize = new Size(this.maxContentWidth*this.sizeScale,nowSize.y);
-        
     }
 
     
