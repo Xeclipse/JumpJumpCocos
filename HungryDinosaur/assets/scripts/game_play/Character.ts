@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, IPhysics2DContact, RigidBody2D, Vec2, Vec3, CCInteger, log, Sprite, Color, Animation } from 'cc';
+import { _decorator, BoxCollider2D, Prefab, Collider2D, Component, Contact2DType, IPhysics2DContact, RigidBody2D, Vec2, Vec3, CCInteger, log, Sprite, Color, Animation, UITransform, Size } from 'cc';
 import { DinoInputEvent, InputManager } from './InputManager';
 import { DebugUIManager } from '../UI/DebugUIManager';
 import { HUDManager } from '../UI/HUDManager';
@@ -50,6 +50,8 @@ export class Character extends Component {
 
     @property({ type: RigidBody2D })
     private characterRigidBody2D: RigidBody2D = null!;
+    @property({type:Sprite})
+    private body:Sprite =null;
 
     @property({ type: CCInteger })
     private characterHungerMax: number = 100;
@@ -72,8 +74,13 @@ export class Character extends Component {
     private onGround: boolean = false;
     private isPrecise: boolean = false;
 
+
+    private sizeScale: number = 1.0;
+    private maxContentWidth: number = 40;
+
     private eatZoneCollider: Collider2D = null!;
     private bottomEatZoneCollider: Collider2D = null!;
+
 
     // 各类判定时长，单位：ms
     private TIME_RUNNING_EAT = 100;
@@ -201,8 +208,9 @@ export class Character extends Component {
 
     update(deltaTime: number) {
         this.updateCharacterProperties(deltaTime);
-        this.updateSprite();
+        this.updateAnim();
         this.updateState();
+        
     }
 
     // 根据new state和current state，实现必要的逻辑
@@ -272,7 +280,14 @@ export class Character extends Component {
             this.deltaCounter -= 1;
             this.currentHunger -= this.characterHungerCost;
         }
+        // 更新尺寸大小
+        this.sizeScale = 0.25+(this.getCurrentHunger()/this.getMaxHunger())*0.75;
+        let nowSize = this.node.getComponent(UITransform).contentSize;
+        this.body.getComponent(UITransform).contentSize = new Size(this.maxContentWidth*this.sizeScale,nowSize.y);
+        
     }
+
+    
 
     private changeToAnim(animName: string) {
         if (!this.characterAnim.getState(animName).isPlaying) {
@@ -282,7 +297,7 @@ export class Character extends Component {
     }
 
     // 根据state, 调整sprite，比如FALLING，则使用下坠的图片
-    updateSprite(): void {
+    updateAnim(): void {
         if (this.characterAnim == null) {
             return;
         }
