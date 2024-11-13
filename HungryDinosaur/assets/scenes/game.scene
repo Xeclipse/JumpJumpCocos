@@ -225,6 +225,7 @@
     "instance": {
       "__id__": 6
     },
+    "targetOverrides": null,
     "nestedPrefabInstanceRoots": null
   },
   {
@@ -3750,7 +3751,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 540,
+    "_orthoHeight": 747.4671669793621,
     "_near": 0,
     "_far": 1000,
     "_color": {
