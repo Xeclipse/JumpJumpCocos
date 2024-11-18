@@ -1,16 +1,18 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Game, Node } from 'cc';
 import { Character } from './Character';
 import { FoodSpawner } from './FoodSpawner';
 import { CameraProxy } from './CameraProxy';
 import { DinoMap } from './DinoMap';
 import { HUDManager } from '../UI/HUDManager';
 import { DeadUIManager } from '../UI/DeadUIManager';
+import { MenuUIEvents, MenuUIManager } from '../UI/MenuUIManager';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
     MAIN_MENU = 0,
     PLAYING = 1,
     DEAD,
+    MAIN_RANKING,
 }
 
 // 管理整体，永远不要让其它component引用
@@ -28,6 +30,8 @@ export class GameManager extends Component {
     private hudManager: HUDManager = null!;
     @property({ type: DeadUIManager })
     private deadUIManager: DeadUIManager = null!;
+    @property({ type: MenuUIManager })
+    private menuUIManager: MenuUIManager = null!;
 
     @property({ type: Node })
     private mainMenu: Node = null;
@@ -35,20 +39,39 @@ export class GameManager extends Component {
     private playUI: Node = null;
     @property({ type: Node })
     private hudUI: Node = null;
+    @property({ type: Node })
+    private mainRankingNode: Node = null!;
 
 
     private deadUINode: Node = null;
 
     private gameState: GameState = GameState.MAIN_MENU;
     private queryStart: boolean = false;
+    private queryingRanking: boolean = false;
 
     private distance: number = 0;
     private score: number = 0;
+
+    private allUINodes: Node[] = [];
 
     start() {
         this.gameState = GameState.MAIN_MENU;
         this.queryStart = false;
         this.deadUINode = this.deadUIManager?.node;
+        this.menuUIManager?.node.on(MenuUIEvents.QUERY_DISPLAY_RANKING, () => {
+            this.queryingRanking = true;
+        });
+        this.menuUIManager?.node.on(MenuUIEvents.RANKING_DATA_RECVED, (rankingData) => {
+            console.log(rankingData);
+        });
+        this.menuUIManager?.node.on(MenuUIEvents.QUERY_QUIT_RANKING, () => {
+            this.queryingRanking = false;
+        });
+        this.allUINodes.push(this.deadUINode);
+        this.allUINodes.push(this.playUI);
+        this.allUINodes.push(this.hudUI);
+        this.allUINodes.push(this.mainRankingNode);
+        this.allUINodes.push(this.mainMenu);
     }
 
     update(deltaTime: number) {
@@ -75,32 +98,36 @@ export class GameManager extends Component {
         this.gameState = newState;
     }
 
+    private showUI(uiNodes: Node[]): void {
+        this.allUINodes.forEach((uiNode: Node) => {
+            if (uiNodes.indexOf(uiNode) < 0) {
+                uiNode.active = false;
+            } else {
+                uiNode.active = true;
+            }
+        });
+    }
+
     updateUI() {
         switch (this.gameState) {
             case GameState.MAIN_MENU:
-                this.playUI.active = false;
-                this.hudUI.active = false;
-                this.deadUINode.active = false;
-                this.mainMenu.active = true;
+                this.showUI([this.mainMenu]);
                 break;
             case GameState.DEAD:
-                this.playUI.active = false;
-                this.hudUI.active = false;
-                this.deadUINode.active = true;
-                this.mainMenu.active = false;
+                this.showUI([this.deadUINode]);
                 this.deadUIManager.setScore(this.score);
                 break;
             case GameState.PLAYING:
-                this.playUI.active = true;
-                this.hudUI.active = true;
-                this.deadUINode.active = false;
-                this.mainMenu.active = false;
+                this.showUI([this.playUI, this.hudUI]);
 
                 this.distance = this.character.getDistance();
                 this.score = Math.round(this.character.getDistance() / 100);
                 this.hudManager.updateDistance(this.distance);
                 this.hudManager.updateScore(this.score);
                 this.hudManager.updateHunger(this.character.getCurrentHunger(), this.character.getMaxHunger(), 1, 1);
+                break;
+            case GameState.MAIN_RANKING:
+                this.showUI([this.mainRankingNode]);
                 break;
         }
     }
@@ -115,11 +142,23 @@ export class GameManager extends Component {
 
         if (this.gameState == GameState.PLAYING && this.character.isDead()) {
             this.changeState(GameState.DEAD);
+            return;
+        }
+
+        if (this.gameState == GameState.MAIN_MENU) {
+            if (this.queryingRanking) {
+                this.changeState(GameState.MAIN_RANKING);
+            }
+        }
+
+        if (this.gameState == GameState.MAIN_RANKING) {
+            if (!this.queryingRanking) {
+                this.changeState(GameState.MAIN_MENU);
+            }
         }
     }
 
     onStartGame() {
-
         this.queryStart = true;
     }
 }
