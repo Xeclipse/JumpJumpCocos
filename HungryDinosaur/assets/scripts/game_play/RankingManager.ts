@@ -25,17 +25,23 @@ export class RankingManager extends Component {
         return null;
     }
 
-    private loadRanking(): any {
+    private async loadRanking(): Promise<any> {
         if (this.networkManager == null) {
             return null;
         }
+
         if (this.networkManager.isDebugMode()) {
             // mock data
+            await fetch("https://www.baidu.com", { method: "GET", mode: "no-cors" }).then((res) => {
+                console.log('response:');
+                console.log(res);
+            });
             return [{
                 "avatar_url": "",
                 "nickname": "Spike",
                 "score": "1000000",
             }]
+
         }
     }
 }

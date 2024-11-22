@@ -78,7 +78,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 220
+      "__id__": 222
     },
     "_id": "ec077dd5-2180-467c-bb7f-922d3a551796"
   },
@@ -3328,7 +3328,7 @@
       "b": 85,
       "a": 255
     },
-    "_string": "重新开始",
+    "_string": "开始游戏",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 15,
@@ -3772,7 +3772,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 643.9506172839507,
+    "_orthoHeight": 700.993288590604,
     "_near": 0,
     "_far": 1000,
     "_color": {
@@ -5163,6 +5163,7 @@
     "rankingManager": {
       "__id__": 145
     },
+    "rankingListUI": null,
     "_id": "0eY5NIok5I8JyNN6n1ITEK"
   },
   {
@@ -5307,8 +5308,7 @@
     "instance": {
       "__id__": 151
     },
-    "targetOverrides": null,
-    "nestedPrefabInstanceRoots": null
+    "targetOverrides": null
   },
   {
     "__type__": "cc.PrefabInstance",
@@ -7224,6 +7224,9 @@
     "targetOverrides": [
       {
         "__id__": 217
+      },
+      {
+        "__id__": 220
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -7266,30 +7269,52 @@
     ]
   },
   {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 144
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "rankingListUI"
+    ],
+    "target": {
+      "__id__": 149
+    },
+    "targetInfo": {
+      "__id__": 221
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "71S+gM+9RJ0bPDMYY1bscB"
+    ]
+  },
+  {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 221
-    },
-    "shadows": {
-      "__id__": 222
-    },
-    "_skybox": {
       "__id__": 223
     },
-    "fog": {
+    "shadows": {
       "__id__": 224
     },
-    "octree": {
+    "_skybox": {
       "__id__": 225
     },
-    "skin": {
+    "fog": {
       "__id__": 226
     },
-    "lightProbeInfo": {
+    "octree": {
       "__id__": 227
     },
-    "postSettings": {
+    "skin": {
       "__id__": 228
+    },
+    "lightProbeInfo": {
+      "__id__": 229
+    },
+    "postSettings": {
+      "__id__": 230
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

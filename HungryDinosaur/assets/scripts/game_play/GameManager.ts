@@ -61,9 +61,6 @@ export class GameManager extends Component {
         this.menuUIManager?.node.on(MenuUIEvents.QUERY_DISPLAY_RANKING, () => {
             this.queryingRanking = true;
         });
-        this.menuUIManager?.node.on(MenuUIEvents.RANKING_DATA_RECVED, (rankingData) => {
-            console.log(rankingData);
-        });
         this.menuUIManager?.node.on(MenuUIEvents.QUERY_QUIT_RANKING, () => {
             this.queryingRanking = false;
         });
@@ -98,9 +95,9 @@ export class GameManager extends Component {
         this.gameState = newState;
     }
 
-    private showUI(uiNodes: Node[]): void {
+    private showUI(displayUINodes: Node[]): void {
         this.allUINodes.forEach((uiNode: Node) => {
-            if (uiNodes.indexOf(uiNode) < 0) {
+            if (displayUINodes.indexOf(uiNode) < 0) {
                 uiNode.active = false;
             } else {
                 uiNode.active = true;
