@@ -6,11 +6,15 @@ import { DinoMap } from './DinoMap';
 import { HUDManager } from '../UI/HUDManager';
 import { DeadUIManager } from '../UI/DeadUIManager';
 import { MenuUIEvents, MenuUIManager } from '../UI/MenuUIManager';
+import { RankingManager } from './RankingManager';
+import { DinoPlayer } from '../profile/DinoPlayer';
+import { RankingList } from '../UI/RankingList';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
     MAIN_MENU = 0,
     PLAYING = 1,
+    UPLOADING_DATA,
     DEAD,
     MAIN_RANKING,
 }
@@ -32,6 +36,10 @@ export class GameManager extends Component {
     private deadUIManager: DeadUIManager = null!;
     @property({ type: MenuUIManager })
     private menuUIManager: MenuUIManager = null!;
+    @property({ type: RankingManager })
+    private rankingManager: RankingManager = null!;
+    @property({ type: DinoPlayer })
+    private dinoPlayer: DinoPlayer = null!;
 
     @property({ type: Node })
     private mainMenu: Node = null;
@@ -40,7 +48,9 @@ export class GameManager extends Component {
     @property({ type: Node })
     private hudUI: Node = null;
     @property({ type: Node })
-    private mainRankingNode: Node = null!;
+    private rankingListUINode: Node = null!;
+    @property({ type: Node })
+    private uploadUINode: Node = null!;
 
 
     private deadUINode: Node = null;
@@ -48,6 +58,7 @@ export class GameManager extends Component {
     private gameState: GameState = GameState.MAIN_MENU;
     private queryStart: boolean = false;
     private queryingRanking: boolean = false;
+    private dataUploaded: boolean = false;
 
     private distance: number = 0;
     private score: number = 0;
@@ -67,8 +78,9 @@ export class GameManager extends Component {
         this.allUINodes.push(this.deadUINode);
         this.allUINodes.push(this.playUI);
         this.allUINodes.push(this.hudUI);
-        this.allUINodes.push(this.mainRankingNode);
+        this.allUINodes.push(this.rankingListUINode);
         this.allUINodes.push(this.mainMenu);
+        this.allUINodes.push(this.uploadUINode);
     }
 
     update(deltaTime: number) {
@@ -86,6 +98,15 @@ export class GameManager extends Component {
             this.character.startPlay();
             this.foodSpawner.resetInit();
             this.foodSpawner.setSpawn(true);
+        }
+
+        if (newState == GameState.UPLOADING_DATA) {
+            // 记录数据
+            this.dataUploaded = false;
+            this.rankingManager.uploadRanking(this.dinoPlayer.getAvatar(), this.dinoPlayer.getNickname(), this.score.toString()).then(() => {
+                this.dataUploaded = true;
+                this.rankingListUINode.getComponent(RankingList).startFetchData();
+            });
         }
 
         if (newState == GameState.DEAD) {
@@ -108,10 +129,12 @@ export class GameManager extends Component {
     updateUI() {
         switch (this.gameState) {
             case GameState.MAIN_MENU:
+                this.rankingListUINode.getComponent(RankingList).setCloseButtonVisibility(true);
                 this.showUI([this.mainMenu]);
                 break;
             case GameState.DEAD:
-                this.showUI([this.deadUINode]);
+                this.rankingListUINode.getComponent(RankingList).setCloseButtonVisibility(false);
+                this.showUI([this.deadUINode, this.rankingListUINode]);
                 this.deadUIManager.setScore(this.score);
                 break;
             case GameState.PLAYING:
@@ -124,7 +147,10 @@ export class GameManager extends Component {
                 this.hudManager.updateHunger(this.character.getCurrentHunger(), this.character.getMaxHunger(), 1, 1);
                 break;
             case GameState.MAIN_RANKING:
-                this.showUI([this.mainRankingNode]);
+                this.showUI([this.rankingListUINode]);
+                break;
+            case GameState.UPLOADING_DATA:
+                this.showUI([this.uploadUINode]);
                 break;
         }
     }
@@ -138,6 +164,11 @@ export class GameManager extends Component {
         }
 
         if (this.gameState == GameState.PLAYING && this.character.isDead()) {
+            this.changeState(GameState.UPLOADING_DATA);
+            return;
+        }
+
+        if (this.gameState == GameState.UPLOADING_DATA && this.dataUploaded) {
             this.changeState(GameState.DEAD);
             return;
         }

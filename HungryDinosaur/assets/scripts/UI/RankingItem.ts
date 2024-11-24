@@ -1,4 +1,5 @@
 import { _decorator, Component, Label, Node, Sprite } from 'cc';
+import { DINO_KEY_NICKNAME, DINO_KEY_SCORE } from '../DinoStringTable';
 const { ccclass, property } = _decorator;
 
 @ccclass('RankingItem')
@@ -19,8 +20,8 @@ export class RankingItem extends Component {
     }
 
     public setData(data: Record<string, string>): void {
-        this.nicknameLabel.string = data["nickname"];
-        this.scoreLabel.string = data["score"];
+        this.nicknameLabel.string = data[DINO_KEY_NICKNAME];
+        this.scoreLabel.string = data[DINO_KEY_SCORE];
     }
 }
 

@@ -10,8 +10,6 @@ export enum MenuUIEvents {
 
 @ccclass('MenuUIManager')
 export class MenuUIManager extends Component {
-    @property({ type: RankingManager })
-    private rankingManager: RankingManager = null!;
     @property({ type: RankingList })
     private rankingListUI: RankingList = null!;
 
@@ -26,9 +24,6 @@ export class MenuUIManager extends Component {
     public onClickRanking(): void {
         this.node.emit(MenuUIEvents.QUERY_DISPLAY_RANKING);
         this.rankingListUI.startFetchData();
-        this.rankingManager.getRanking().then((rankingData: any) => {
-            this.rankingListUI.fetchedData(rankingData);
-        });
     }
 
     public onClickQuitRanking(): void {
